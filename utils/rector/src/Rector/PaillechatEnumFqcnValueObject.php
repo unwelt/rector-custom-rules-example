@@ -7,10 +7,10 @@ namespace Utils\Rector\Rector;
 use Paillechat\Enum\Enum;
 use Webmozart\Assert\Assert;
 
-final class PaillechatEnumFqcnValueObject
+final readonly class PaillechatEnumFqcnValueObject
 {
     public function __construct(
-        public readonly string $fqcn
+        public string $fqcn
     )
     {}
 

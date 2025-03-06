@@ -11,35 +11,45 @@ use PhpParser\Node\Stmt\EnumCase;
 use Rector\NodeNameResolver\NodeNameResolver;
 use Rector\NodeTypeResolver\Node\AttributeKey;
 
-final class CustomEnumFactory
+final readonly class CustomEnumFactory
 {
     public function __construct(
-        private readonly NodeNameResolver $nodeNameResolver
+        private NodeNameResolver $nodeNameResolver
     ) {
     }
 
-    public function createFromClass(Class_ $class): Enum_
+    public function createFromClass(Class_ $classToReplace): Enum_
     {
-        $shortClassName = $this->nodeNameResolver->getShortName($class);
-        $enum = new Enum_($shortClassName, [], ['startLine' => $class->getStartLine(), 'endLine' => $class->getEndLine()]);
-        $enum->namespacedName = $class->namespacedName;
-        $constants = $class->getConstants();
-        $enum->stmts = $class->getTraitUses();
+        $shortClassNameOfReplacementClass = $this->nodeNameResolver->getShortName($classToReplace);
+        $enumNode = new Enum_(
+            name: $shortClassNameOfReplacementClass,
+            attributes: [
+                'startLine' => $classToReplace->getStartLine(),
+                'endLine' => $classToReplace->getEndLine()
+            ]
+        );
+
+        $enumNode->namespacedName = $classToReplace->namespacedName;
+        $constantsOfReplacementClass = $classToReplace->getConstants();
+        $enumNode->stmts = $classToReplace->getTraitUses();
         
-        if ($constants !== []) {
-            foreach ($constants as $constant) {
-                $enum->stmts[] = $this->createEnumCaseFromConst($constant);
+        if ($constantsOfReplacementClass !== []) {
+            foreach ($constantsOfReplacementClass as $constant) {
+                $enumNode->stmts[] = $this->createEnumCaseFromConst($constant);
             }
         }
         
-        $enum->stmts = \array_merge($enum->stmts, $class->getMethods());
-        return $enum;
+        $enumNode->stmts = \array_merge($enumNode->stmts, $classToReplace->getMethods());
+        return $enumNode;
     }
 
     private function createEnumCaseFromConst(ClassConst $classConst) : EnumCase
     {
         $constConst = $classConst->consts[0];
-        $enumCase = new EnumCase($constConst->name, null, [], ['startLine' => $constConst->getStartLine(), 'endLine' => $constConst->getEndLine()]);
+        $enumCase = new EnumCase(
+            name: $constConst->name,
+            attributes: ['startLine' => $constConst->getStartLine(), 'endLine' => $constConst->getEndLine()]
+        );
 
         $enumCase->setAttribute(AttributeKey::PHP_DOC_INFO, $classConst->getAttribute(AttributeKey::PHP_DOC_INFO));
         $enumCase->setAttribute(AttributeKey::COMMENTS, $classConst->getAttribute(AttributeKey::COMMENTS));

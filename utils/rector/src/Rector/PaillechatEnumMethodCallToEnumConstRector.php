@@ -21,7 +21,6 @@ use Webmozart\Assert\Assert;
 
 class PaillechatEnumMethodCallToEnumConstRector extends AbstractRector implements MinPhpVersionInterface, ConfigurableRectorInterface
 {
-    /** @var string[] */
     private const ENUM_METHODS_TO_OMIT = ['createByName'];
     private const METHOD_NAME = 'getName';
 
@@ -50,19 +49,17 @@ CODE_SAMPLE
         return [MethodCall::class, StaticCall::class];
     }
 
-    /**
-     * @inheritDoc
-     */
     public function refactor(Node $node)
     {
         if ($node->name instanceof Expr) {
             return null;
         }
 
-        $enumCaseName = $this->getName($node->name);
+        $enumCaseName = $this->getName($node);
         if ($enumCaseName === null) {
             return null;
         }
+
         if ($this->shouldOmitEnumCase($enumCaseName)) {
             return null;
         }
@@ -113,21 +110,23 @@ CODE_SAMPLE
         $classConstFetch = $this->nodeFactory->createClassConstFetch($className, $upperCaseName);
         return new PropertyFetch($classConstFetch, $property);
     }
+
     private function refactorMethodCall(MethodCall $methodCall, string $methodName) : ?PropertyFetch
     {
         if (!$this->isObjectType($methodCall->var, new ObjectType((string)$this->enumToRefactor))) {
             return null;
         }
 
-        if ($methodName === self::METHOD_NAME) {
-            return $this->refactorGetterToPropertyFetch($methodCall, 'name');
+        if ($methodName !== self::METHOD_NAME) {
+            return null;
         }
 
-        return null;
+        return $this->refactorGetterToPropertyFetch($methodCall, 'name');
     }
+
     private function shouldOmitEnumCase(string $enumCaseName) : bool
     {
-        return \in_array($enumCaseName, self::ENUM_METHODS_TO_OMIT, \true);
+        return \in_array($enumCaseName, self::ENUM_METHODS_TO_OMIT, true);
     }
 
     public function configure(array $configuration): void

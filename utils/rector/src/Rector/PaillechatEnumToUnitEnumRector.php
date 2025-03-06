@@ -59,17 +59,11 @@ CODE_SAMPLE
         )]);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getNodeTypes(): array
     {
         return [Class_::class];
     }
 
-    /**
-     * @inheritDoc
-     */
     public function refactor(Node $node)
     {
         if (!$this->isObjectType($node, new ObjectType((string)$this->enumToRefactor))) {
