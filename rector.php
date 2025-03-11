@@ -26,7 +26,6 @@ return static function (RectorConfig $rectorConfig): void {
 
     $rectorConfig->symfonyContainerXml(__DIR__ . '/var/cache/test/DataMatrixService_KernelTestDebugContainer.xml');
 
-    // Run to refactor target enum
     $enumToRefactor = PaillechatEnumFqcnValueObject::fromString(PaillechatEnum::class);
 
     $rectorConfig->ruleWithConfiguration(PaillechatEnumToUnitEnumRector::class, [$enumToRefactor]);

@@ -29,8 +29,9 @@ use Webmozart\Assert\Assert;
 
 final class RecastingPaillechatEnumMethodCallToEnumCaseMethodCallRector extends AbstractRector implements MinPhpVersionInterface, ConfigurableRectorInterface
 {
-    private const METHOD_CALL_NAME = 'getName';
+    private const GET_NAME_METHOD = 'getName';
     private const PROPERTY_FETCH_NAME = 'name';
+    private const PAILLECHAT_ENUM_CLASSNAME = Enum::class;
 
     private PaillechatEnumFqcnValueObject $enumToRefactor;
 
@@ -71,7 +72,8 @@ CODE_SAMPLE
             return $this->nodeFactory->createPropertyFetch($node->expr, self::PROPERTY_FETCH_NAME);
         }
 
-        if ($node->expr instanceof MethodCall && $this->getName($node->expr->name) === self::METHOD_CALL_NAME) {
+        if ($node->expr instanceof MethodCall && $this->getName($node->expr->name) === self::GET_NAME_METHOD) {
+            /** @var Node\Expr $var */
             $var = $node->expr->var;
             $className = $this->getName($var->class);
 
@@ -92,7 +94,7 @@ CODE_SAMPLE
 
     public function configure(array $configuration): void
     {
-        $enumFqcn = $configuration[0] ?? PaillechatEnumFqcnValueObject::fromString(Enum::class);
+        $enumFqcn = $configuration[0] ?? PaillechatEnumFqcnValueObject::fromString(self::PAILLECHAT_ENUM_CLASSNAME);
         Assert::isAOf($enumFqcn, PaillechatEnumFqcnValueObject::class);
 
         $this->enumToRefactor = $enumFqcn;
