@@ -6,8 +6,12 @@ namespace Utils\Rector\Tests\Rector\PaillechatEnumMethodCallToEnumConstRector\So
 
 use Paillechat\Enum\Enum;
 
+/**
+ * @method static static RU()
+ * @method static static BY()
+ */
 final class CountryEnum extends Enum
 {
-    public const RU = 'ru';
-    public const BY = 'by';
+    private const RU = 'ru';
+    private const BY = 'by';
 }

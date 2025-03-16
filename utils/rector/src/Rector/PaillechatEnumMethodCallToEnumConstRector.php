@@ -19,7 +19,13 @@ use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 use Webmozart\Assert\Assert;
 
-class PaillechatEnumMethodCallToEnumConstRector extends AbstractRector implements MinPhpVersionInterface, ConfigurableRectorInterface
+use function in_array;
+use function is_string;
+use function strtoupper;
+
+class PaillechatEnumMethodCallToEnumConstRector extends AbstractRector implements
+    MinPhpVersionInterface,
+    ConfigurableRectorInterface
 {
     /** @var string[] */
     private const ENUM_METHODS_TO_OMIT = ['createByName'];
@@ -28,23 +34,23 @@ class PaillechatEnumMethodCallToEnumConstRector extends AbstractRector implement
 
     private PaillechatEnumFqcnValueObject $enumToRefactor;
 
-    public function __construct() {
-
-    }
+    public function __construct() {}
 
     public function getRuleDefinition(): RuleDefinition
     {
-        return new RuleDefinition('Refactor Paillechat enum method calls', [new CodeSample(
-            <<<'CODE_SAMPLE'
+        return new RuleDefinition('Refactor Paillechat enum method calls', [
+            new CodeSample(
+                <<<'CODE_SAMPLE'
 $name1 = SomeEnum::SOME_CONSTANT()->getName();
 $cases = SomeEnum::getConstList();
 CODE_SAMPLE
-            ,
-            <<<'CODE_SAMPLE'
+                ,
+                <<<'CODE_SAMPLE'
 $name1 = SomeEnum::SOME_CONSTANT->name;
 $name2 = SomeEnum::cases();
 CODE_SAMPLE,
-        )]);
+            ),
+        ]);
     }
 
     public function provideMinPhpVersion(): int
@@ -84,7 +90,7 @@ CODE_SAMPLE,
         }
 
         $className = $this->getName($node->class);
-        if (!\is_string($className)) {
+        if (!is_string($className)) {
             return null;
         }
 
@@ -92,16 +98,13 @@ CODE_SAMPLE,
             return $this->nodeFactory->createStaticCall($className, 'cases');
         }
 
-        $constantName = \strtoupper($enumCaseName);
+        $constantName = strtoupper($enumCaseName);
         return $this->nodeFactory->createClassConstFetch($className, $constantName);
     }
 
     private function refactorMethodCall(MethodCall $methodCall, string $methodName): ?PropertyFetch
     {
-        if (
-            !$this->isObjectType($methodCall->var, new ObjectType((string) $this->enumToRefactor))
-            && ($methodCall->var?->class && !$this->isObjectType($methodCall->var->class, new ObjectType((string) $this->enumToRefactor)))
-        ) {
+        if (!$this->isObjectType($methodCall->var, new ObjectType((string) $this->enumToRefactor))) {
             return null;
         }
 
@@ -133,14 +136,14 @@ CODE_SAMPLE,
             return null;
         }
 
-        $upperCaseName = \strtoupper($enumCaseName);
+        $upperCaseName = strtoupper($enumCaseName);
         $classConstFetch = $this->nodeFactory->createClassConstFetch($className, $upperCaseName);
         return new PropertyFetch($classConstFetch, $property);
     }
 
     private function shouldOmitEnumCase(string $enumCaseName): bool
     {
-        return \in_array($enumCaseName, self::ENUM_METHODS_TO_OMIT, \true);
+        return in_array($enumCaseName, self::ENUM_METHODS_TO_OMIT, true);
     }
 
     public function configure(array $configuration): void

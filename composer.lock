@@ -4,27 +4,27 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "838b62b2af9fb2e203f428bfb1e1d327",
+  "content-hash":"5b763bdb8367a590402f418426c5a5e0",
     "packages": [
         {
             "name": "paillechat/php-enum",
-            "version": "1.2.1",
+          "version":"2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/paillechat/php-enum.git",
-                "reference": "4f0ae999a41ed9b6f542b3844ff683588b010d47"
+              "reference":"1a4d98d45b9c736f2fd036ef314d72e3d09d15b5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/paillechat/php-enum/zipball/4f0ae999a41ed9b6f542b3844ff683588b010d47",
-                "reference": "4f0ae999a41ed9b6f542b3844ff683588b010d47",
+              "url":"https://api.github.com/repos/paillechat/php-enum/zipball/1a4d98d45b9c736f2fd036ef314d72e3d09d15b5",
+              "reference":"1a4d98d45b9c736f2fd036ef314d72e3d09d15b5",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.0.0"
+              "php":">=7.1"
             },
             "require-dev": {
-                "phpunit/phpunit": "^6.5",
+              "phpunit/phpunit":"^7.0",
                 "squizlabs/php_codesniffer": "^2.8",
                 "symfony/phpunit-bridge": "^4.0"
             },
@@ -40,6 +40,10 @@
             ],
             "authors": [
                 {
+                  "name":"Pavel Batanov",
+                  "email":"pavel@batanov.me"
+                },
+              {
                     "name": "Ilya Burtsev",
                     "email": "paillechat@gmail.com"
                 }
@@ -50,9 +54,9 @@
             ],
             "support": {
                 "issues": "https://github.com/paillechat/php-enum/issues",
-                "source": "https://github.com/paillechat/php-enum/tree/1.2.1"
+              "source":"https://github.com/paillechat/php-enum/tree/2.1"
             },
-            "time": "2018-09-07T11:49:53+00:00"
+          "time":"2018-07-10T09:57:22+00:00"
         },
         {
             "name": "webmozart/assert",
