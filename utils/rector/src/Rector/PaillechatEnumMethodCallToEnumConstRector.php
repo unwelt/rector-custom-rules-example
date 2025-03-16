@@ -23,9 +23,14 @@ class PaillechatEnumMethodCallToEnumConstRector extends AbstractRector implement
 {
     /** @var string[] */
     private const ENUM_METHODS_TO_OMIT = ['createByName'];
-    private const METHOD_NAME = 'getName';
+    private const GET_NAME_METHOD = 'getName';
+    private const GET_CONST_LIST_METHOD = 'getConstList';
 
     private PaillechatEnumFqcnValueObject $enumToRefactor;
+
+    public function __construct() {
+
+    }
 
     public function getRuleDefinition(): RuleDefinition
     {
@@ -37,7 +42,7 @@ CODE_SAMPLE
             ,
             <<<'CODE_SAMPLE'
 $name1 = SomeEnum::SOME_CONSTANT->name;
-$name2 = SomeEnum::cases;
+$name2 = SomeEnum::cases();
 CODE_SAMPLE,
         )]);
     }
@@ -65,6 +70,7 @@ CODE_SAMPLE,
         if ($enumCaseName === null) {
             return null;
         }
+
         if ($this->shouldOmitEnumCase($enumCaseName)) {
             return null;
         }
@@ -82,12 +88,28 @@ CODE_SAMPLE,
             return null;
         }
 
-        if ($node instanceof StaticCall && $enumCaseName === 'getConstList') {
+        if ($node instanceof StaticCall && $enumCaseName === self::GET_CONST_LIST_METHOD) {
             return $this->nodeFactory->createStaticCall($className, 'cases');
         }
 
         $constantName = \strtoupper($enumCaseName);
         return $this->nodeFactory->createClassConstFetch($className, $constantName);
+    }
+
+    private function refactorMethodCall(MethodCall $methodCall, string $methodName): ?PropertyFetch
+    {
+        if (
+            !$this->isObjectType($methodCall->var, new ObjectType((string) $this->enumToRefactor))
+            && ($methodCall->var?->class && !$this->isObjectType($methodCall->var->class, new ObjectType((string) $this->enumToRefactor)))
+        ) {
+            return null;
+        }
+
+        if ($methodName === self::GET_NAME_METHOD) {
+            return $this->refactorGetterToPropertyFetch($methodCall, 'name');
+        }
+
+        return null;
     }
 
     private function refactorGetterToPropertyFetch(MethodCall $methodCall, string $property): ?PropertyFetch
@@ -114,22 +136,6 @@ CODE_SAMPLE,
         $upperCaseName = \strtoupper($enumCaseName);
         $classConstFetch = $this->nodeFactory->createClassConstFetch($className, $upperCaseName);
         return new PropertyFetch($classConstFetch, $property);
-    }
-
-    private function refactorMethodCall(MethodCall $methodCall, string $methodName): ?PropertyFetch
-    {
-        if (
-            !$this->isObjectType($methodCall->var, new ObjectType((string) $this->enumToRefactor))
-            && !$this->isObjectType($methodCall->var->class, new ObjectType((string) $this->enumToRefactor))
-        ) {
-            return null;
-        }
-
-        if ($methodName === self::METHOD_NAME) {
-            return $this->refactorGetterToPropertyFetch($methodCall, 'name');
-        }
-
-        return null;
     }
 
     private function shouldOmitEnumCase(string $enumCaseName): bool

@@ -9,7 +9,7 @@ use Utils\Rector\Rector\PaillechatEnumMethodCallToEnumConstRector;
 /**
  * @see PaillechatEnumMethodCallToEnumConstRector
  */
-class PaillechatEnumMethodCallToEnumConstRectorTest extends AbstractRectorTestCase
+final class PaillechatEnumMethodCallToEnumConstRectorTest extends AbstractRectorTestCase
 {
     /**
      * @dataProvider provideData
