@@ -24,7 +24,7 @@ return static function (RectorConfig $rectorConfig): void {
     $services = $rectorConfig->services();
     $services->set(CustomEnumFactory::class)->autowire();
 
-    //$rectorConfig->symfonyContainerXml(__DIR__ . '/var/cache/test/DataMatrixService_KernelTestDebugContainer.xml');
+    $rectorConfig->symfonyContainerXml(__DIR__ . '/var/cache/test/DataMatrixService_KernelTestDebugContainer.xml');
 
     $enumToRefactor = PaillechatEnumFqcnValueObject::fromString(PaillechatEnum::class);
 

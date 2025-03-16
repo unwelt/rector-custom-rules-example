@@ -34,7 +34,10 @@ class PaillechatEnumMethodCallToEnumConstRector extends AbstractRector implement
 
     private PaillechatEnumFqcnValueObject $enumToRefactor;
 
-    public function __construct() {}
+    public function __construct()
+    {
+        $this->enumToRefactor = PaillechatEnumFqcnValueObject::fromString(Enum::class);
+    }
 
     public function getRuleDefinition(): RuleDefinition
     {

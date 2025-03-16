@@ -10,7 +10,6 @@ use PhpParser\Node\Stmt\Class_;
 use PHPStan\Type\ObjectType;
 use Rector\Core\Contract\Rector\ConfigurableRectorInterface;
 use Rector\Core\Rector\AbstractRector;
-
 use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\Exception\PoorDocumentationException;
@@ -18,14 +17,16 @@ use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 use Webmozart\Assert\Assert;
 
-final class PaillechatEnumToUnitEnumRector extends AbstractRector implements MinPhpVersionInterface, ConfigurableRectorInterface
+final class PaillechatEnumToUnitEnumRector extends AbstractRector implements
+    MinPhpVersionInterface,
+    ConfigurableRectorInterface
 {
     private PaillechatEnumFqcnValueObject $enumToRefactor;
 
     public function __construct(
-        private readonly CustomEnumFactory $enumFactory
-    )
-    {
+        private readonly CustomEnumFactory $enumFactory,
+    ) {
+        $this->enumToRefactor = PaillechatEnumFqcnValueObject::fromString(Enum::class);
     }
 
     /**
@@ -33,7 +34,9 @@ final class PaillechatEnumToUnitEnumRector extends AbstractRector implements Min
      */
     public function getRuleDefinition(): RuleDefinition
     {
-        return new RuleDefinition('Refactor Paillechat enum class to native Enum',[new CodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Refactor Paillechat enum class to native Enum', [
+            new CodeSample(
+                <<<'CODE_SAMPLE'
 use \Paillechat\Enum\Enum;
 
 /**
@@ -48,15 +51,17 @@ class StatusEnum extends Enum
     private const ARCHIVED = 'archived';
 }
 CODE_SAMPLE
-            , <<<'CODE_SAMPLE'
+                ,
+                <<<'CODE_SAMPLE'
 enum StatusEnum
 {
     case DRAFT;
     case PUBLISHED;
     case ARCHIVED;
 }
-CODE_SAMPLE
-        )]);
+CODE_SAMPLE,
+            ),
+        ]);
     }
 
     public function getNodeTypes(): array
@@ -66,7 +71,7 @@ CODE_SAMPLE
 
     public function refactor(Node $node)
     {
-        if (!$this->isObjectType($node, new ObjectType((string)$this->enumToRefactor))) {
+        if (!$this->isObjectType($node, new ObjectType((string) $this->enumToRefactor))) {
             return null;
         }
 
