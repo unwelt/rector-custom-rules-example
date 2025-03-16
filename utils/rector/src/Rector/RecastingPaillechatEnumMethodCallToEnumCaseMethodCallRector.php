@@ -1,6 +1,7 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Utils\Rector\Rector;
 
 use Paillechat\Enum\Enum;
@@ -27,31 +28,43 @@ use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 use Webmozart\Assert\Assert;
 
-final class RecastingPaillechatEnumMethodCallToEnumCaseMethodCallRector extends AbstractRector implements MinPhpVersionInterface, ConfigurableRectorInterface
+final class RecastingPaillechatEnumMethodCallToEnumCaseMethodCallRector extends AbstractRector implements
+    MinPhpVersionInterface,
+    ConfigurableRectorInterface
 {
     private const GET_NAME_METHOD = 'getName';
     private const PROPERTY_FETCH_NAME = 'name';
-    private const PAILLECHAT_ENUM_CLASSNAME = Enum::class;
 
     private PaillechatEnumFqcnValueObject $enumToRefactor;
 
-    public function getRuleDefinition() : RuleDefinition
+    public function __construct()
     {
-        return new RuleDefinition('Removes recasting of the same type', [new CodeSample(<<<'CODE_SAMPLE'
+        $this->enumToRefactor = PaillechatEnumFqcnValueObject::fromString(Enum::class);
+    }
+
+    public function getRuleDefinition(): RuleDefinition
+    {
+        return new RuleDefinition('Removes recasting of the same type', [
+            new CodeSample(
+                <<<'CODE_SAMPLE'
 $string1 = (string) SomeEnum::SOME_CASE();
 $string2 = (string) SomeEnum::SOME_CASE()->getName();
+$string3 = (string) NativeEnum::SOME_CASE;
 CODE_SAMPLE
-            , <<<'CODE_SAMPLE'
+                ,
+                <<<'CODE_SAMPLE'
 $string1 = SomeEnum::SOME_CASE->name;
 $string2 = SomeEnum::SOME_CASE->name;
-CODE_SAMPLE
-        )]);
+$string3 = NativeEnum::SOME_CASE->name;
+CODE_SAMPLE,
+            ),
+        ]);
     }
 
     /**
      * @return array<class-string<Node>>
      */
-    public function getNodeTypes() : array
+    public function getNodeTypes(): array
     {
         return [Cast::class];
     }
@@ -59,7 +72,7 @@ CODE_SAMPLE
     /**
      * @param Cast $node
      */
-    public function refactor(Node $node) : ?Node
+    public function refactor(Node $node): ?Node
     {
         $nodeClass = \get_class($node);
         if ($nodeClass !== String_::class) {
@@ -68,7 +81,7 @@ CODE_SAMPLE
 
         $nodeType = $this->nodeTypeResolver->getNativeType($node->expr);
 
-        if ($nodeType instanceof EnumCaseObjectType || $this->isObjectType($node->expr, new ObjectType((string)$this->enumToRefactor))) {
+        if ($nodeType instanceof EnumCaseObjectType) {
             return $this->nodeFactory->createPropertyFetch($node->expr, self::PROPERTY_FETCH_NAME);
         }
 
@@ -77,11 +90,24 @@ CODE_SAMPLE
             $var = $node->expr->var;
             $className = $this->getName($var->class);
 
-            if (\is_string($className) && $var instanceof StaticCall && $this->isObjectType($var, new ObjectType((string)$this->enumToRefactor))) {
+            if (\is_string($className) && $var instanceof StaticCall && $this->isObjectType(
+                $var,
+                new ObjectType((string) $this->enumToRefactor),
+            )) {
                 $constantName = \strtoupper($this->getName($var->name));
                 $property = $this->nodeFactory->createClassConstFetch($className, $constantName);
                 return $this->nodeFactory->createPropertyFetch($property, self::PROPERTY_FETCH_NAME);
             }
+        }
+
+        if ($node->expr instanceof StaticCall && $this->isObjectType(
+            $node->expr,
+            new ObjectType((string) $this->enumToRefactor),
+        )) {
+            $constantName = \strtoupper($this->getName($node->expr->name));
+            $className = $this->getName($node->expr->class);
+            $property = $this->nodeFactory->createClassConstFetch($className, $constantName);
+            return $this->nodeFactory->createPropertyFetch($property, self::PROPERTY_FETCH_NAME);
         }
 
         return null;
@@ -94,7 +120,7 @@ CODE_SAMPLE
 
     public function configure(array $configuration): void
     {
-        $enumFqcn = $configuration[0] ?? PaillechatEnumFqcnValueObject::fromString(self::PAILLECHAT_ENUM_CLASSNAME);
+        $enumFqcn = $configuration[0] ?? PaillechatEnumFqcnValueObject::fromString(Enum::class);
         Assert::isAOf($enumFqcn, PaillechatEnumFqcnValueObject::class);
 
         $this->enumToRefactor = $enumFqcn;

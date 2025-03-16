@@ -2,16 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Utils\Rector\Tests\Rector\PaillechatEnumToUnitEnumRector;
+namespace Utils\Rector\Tests\Rector\RecastingPaillechatEnumMethodCallToEnumCaseMethodCallRector;
 
 use Iterator;
 use Rector\Testing\PHPUnit\AbstractRectorTestCase;
-use Utils\Rector\Rector\PaillechatEnumToUnitEnumRector;
 
 /**
- * @see PaillechatEnumToUnitEnumRector
+ * @see RecastingPaillechatEnumMethodCallToEnumCaseMethodCallRector
  */
-final class PaillechatEnumToUnitEnumRectorTest extends AbstractRectorTestCase
+final class RecastingPaillechatEnumMethodCallToEnumCaseMethodCallRectorTest extends AbstractRectorTestCase
 {
     /**
      * @dataProvider provideData
