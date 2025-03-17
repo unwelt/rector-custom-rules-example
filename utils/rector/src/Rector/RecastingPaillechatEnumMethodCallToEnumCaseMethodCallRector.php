@@ -9,6 +9,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\Cast;
 use PhpParser\Node\Expr\Cast\String_;
 use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Type\ArrayType;
@@ -74,8 +75,7 @@ CODE_SAMPLE,
      */
     public function refactor(Node $node): ?Node
     {
-        $nodeClass = \get_class($node);
-        if ($nodeClass !== String_::class) {
+        if (!$node instanceof String_) {
             return null;
         }
 
@@ -95,8 +95,7 @@ CODE_SAMPLE,
                 new ObjectType((string) $this->enumToRefactor),
             )) {
                 $constantName = \strtoupper($this->getName($var->name));
-                $property = $this->nodeFactory->createClassConstFetch($className, $constantName);
-                return $this->nodeFactory->createPropertyFetch($property, self::PROPERTY_FETCH_NAME);
+                return $this->makeClassConstantFetchWithPropertyFetch($className, $constantName);
             }
         }
 
@@ -104,13 +103,19 @@ CODE_SAMPLE,
             $node->expr,
             new ObjectType((string) $this->enumToRefactor),
         )) {
-            $constantName = \strtoupper($this->getName($node->expr->name));
-            $className = $this->getName($node->expr->class);
-            $property = $this->nodeFactory->createClassConstFetch($className, $constantName);
-            return $this->nodeFactory->createPropertyFetch($property, self::PROPERTY_FETCH_NAME);
+            return $this->makeClassConstantFetchWithPropertyFetch(
+                $this->getName($node->expr->class),
+                \strtoupper($this->getName($node->expr->name)),
+            );
         }
 
         return null;
+    }
+
+    private function makeClassConstantFetchWithPropertyFetch(string $className, string $constantName): ?PropertyFetch
+    {
+        $property = $this->nodeFactory->createClassConstFetch($className, $constantName);
+        return $this->nodeFactory->createPropertyFetch($property, self::PROPERTY_FETCH_NAME);
     }
 
     public function provideMinPhpVersion(): int
